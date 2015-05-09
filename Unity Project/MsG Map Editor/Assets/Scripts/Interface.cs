@@ -1,20 +1,30 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System;
 
 public class Interface : MonoBehaviour 
 {
 	#region inspector
 	public GUIStyle basicBtnStyle;
 	public GUIStyle iconBtnStyle;
+	public GUIStyle panelsBackgroundStyle;
 	#endregion
+
+	private event Action onUpdate;
 
 	void OnGUI()
 	{
-		Rect __topLeftMenu = new Rect(0,0, 150, 50);
-		GUI.BeginGroup(__topLeftMenu);
+		float __iconBtnSize = 30;
+		float __iconBtnMargin = 10;
+		Rect __topLeftMenuRect = new Rect(0,0, __iconBtnSize * 3 + __iconBtnMargin * 4, __iconBtnMargin*2 + __iconBtnSize);
+		GUI.BeginGroup(__topLeftMenuRect);
 		{
+			//GUI.color = new Color(1,1,1,0.3f);
+			GUI.Box(new Rect(0,0, __topLeftMenuRect.width, __topLeftMenuRect.height), "", panelsBackgroundStyle);
+			//GUI.color = Color.white;
+
 			//load tiles
-			if(GUI.Button(new Rect(10,10, 40,40), new GUIContent(@"", "Load tiles"), iconBtnStyle))
+			if(GUI.Button(new Rect(__iconBtnMargin,__iconBtnMargin, __iconBtnSize,__iconBtnSize), new GUIContent(@"", "Load tiles"), iconBtnStyle))
 			{
 				System.Windows.Forms.OpenFileDialog __dialog = new System.Windows.Forms.OpenFileDialog();
 				__dialog.Filter = "PNG|*.png|JPG|*.jpg";
@@ -29,7 +39,7 @@ public class Interface : MonoBehaviour
 			}
 
 			//save map
-			if(GUI.Button(new Rect(60, 10, 40, 40), new GUIContent(@"", "Save current map"), iconBtnStyle))
+			if(GUI.Button(new Rect(__iconBtnSize + __iconBtnMargin + __iconBtnMargin, __iconBtnMargin, __iconBtnSize, __iconBtnSize), new GUIContent(@"", "Save current map"), iconBtnStyle))
 			{
 				System.Windows.Forms.SaveFileDialog __dialog = new System.Windows.Forms.SaveFileDialog();
 				__dialog.Filter = "MSGMAP|*.msgmap";
@@ -44,7 +54,7 @@ public class Interface : MonoBehaviour
 			}
 
 			//load map
-			if(GUI.Button(new Rect(110, 10, 40, 40), new GUIContent(@"", "Load map"), iconBtnStyle))
+			if(GUI.Button(new Rect(((__iconBtnSize + __iconBtnMargin) * 2) + __iconBtnMargin, __iconBtnMargin, __iconBtnSize, __iconBtnSize), new GUIContent(@"", "Load map"), iconBtnStyle))
 			{
 				System.Windows.Forms.OpenFileDialog __dialog = new System.Windows.Forms.OpenFileDialog();
 				__dialog.Filter = "MSGMAP|*.msgmap";
@@ -57,9 +67,33 @@ public class Interface : MonoBehaviour
 					System.Windows.Forms.MessageBox.Show("Map loaded.");
 				}
 			}
+		}
+		GUI.EndGroup();
 
+		Rect __cameraBtnsRect = new Rect(Screen.width - __iconBtnSize - (__iconBtnMargin*2), 0, __iconBtnSize + (__iconBtnMargin*2), __iconBtnSize*3 + (__iconBtnMargin *4));
+		GUI.BeginGroup(__cameraBtnsRect);
+		{
+			//GUI.color = new Color(1,1,1,0.3f);
+			GUI.Box(new Rect(0,0, __cameraBtnsRect.width, __cameraBtnsRect.height), "", panelsBackgroundStyle);
+			//GUI.color = Color.white;
 
+			//change camera view
+			if(GUI.Button(new Rect(__iconBtnMargin,__iconBtnMargin, __iconBtnSize, __iconBtnSize), new GUIContent(@"", "Change camera view"), iconBtnStyle))
+			{
 
+			}
+
+			//change camera zoom in
+			if(GUI.Button(new Rect(__iconBtnMargin,__iconBtnMargin + __iconBtnSize + __iconBtnMargin, __iconBtnSize, __iconBtnSize), new GUIContent(@"", "Zoom in"), iconBtnStyle))
+			{
+				
+			}
+
+			//change camera zoom out
+			if(GUI.Button(new Rect(__iconBtnMargin,__iconBtnMargin + (__iconBtnSize + __iconBtnMargin) * 2, __iconBtnSize, __iconBtnSize), new GUIContent(@"", "Zoom out"), iconBtnStyle))
+			{
+				
+			}
 		}
 		GUI.EndGroup();
 
@@ -67,10 +101,20 @@ public class Interface : MonoBehaviour
 
 		//tooltip
 		if(GUI.tooltip != "")
+		{
+			var __size = panelsBackgroundStyle.CalcSize(new GUIContent(GUI.tooltip));
+			
 			GUI.Box(new Rect(
-				(((Input.mousePosition.x+5) > (Screen.width - 300)) ? (Screen.width-300) : (Input.mousePosition.x+5)), 
+				(((Input.mousePosition.x+5) > (Screen.width - __size.x - 30)) ? (Input.mousePosition.x+5 -__size.x - 30) : (Input.mousePosition.x+5)), 
 				(Screen.height - Input.mousePosition.y)+15, 
-				300, 
-				30), GUI.tooltip);
+				__size.x + 30, 
+				30), GUI.tooltip, panelsBackgroundStyle);
+		}
+	}
+
+	void Update()
+	{
+		if(onUpdate != null)
+			onUpdate();
 	}
 }
