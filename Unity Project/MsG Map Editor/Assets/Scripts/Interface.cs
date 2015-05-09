@@ -8,9 +8,18 @@ public class Interface : MonoBehaviour
 	public GUIStyle basicBtnStyle;
 	public GUIStyle iconBtnStyle;
 	public GUIStyle panelsBackgroundStyle;
+	public GameObject selectionPrefab;
 	#endregion
 
+	#region private data
 	private event Action onUpdate;
+	private Transform selectorTransform;
+	#endregion
+
+	void Start()
+	{
+		selectorTransform = ((GameObject)GameObject.Instantiate(selectionPrefab)).transform;
+	}
 
 	void OnGUI()
 	{
@@ -116,5 +125,11 @@ public class Interface : MonoBehaviour
 	{
 		if(onUpdate != null)
 			onUpdate();
+
+		Ray __ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+		Vector3 __updatedPosition = __ray.origin + (((-__ray.origin.y)/__ray.direction.y) * __ray.direction);
+		__updatedPosition = new Vector3(Mathf.Round(__updatedPosition.x), 0.001f, Mathf.Round(__updatedPosition.z));
+		selectorTransform.position = __updatedPosition + (Vector3.down * 0.1f);
 	}
 }

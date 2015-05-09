@@ -46,6 +46,7 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\CameraMoviment.cs" />
      <Compile Include="Assets\Scripts\GridDrawner.cs" />
      <Compile Include="Assets\Scripts\Interface.cs" />
      <Compile Include="Assets\Scripts\MaterialManager.cs" />
