@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Scripts\GridDrawner.cs" />
+     <Compile Include="Assets\Scripts\Interface.cs" />
      <Compile Include="Assets\Scripts\MaterialManager.cs" />
      <Compile Include="Assets\Scripts\Plane.cs" />
      <Compile Include="Assets\Scripts\Tile.cs" />
@@ -56,13 +57,13 @@
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
  </Reference>
  <Reference Include="System.Data">
- <HintPath>C:/Users/ivan.cavalheiro/Documents/GitHub/MsG_MapEditor/Unity Project/MsG Map Editor/Assets/Plugins/System.Data.dll</HintPath>
+ <HintPath>C:/Users/Ivan/Documents/GitHub/MsG_MapEditor/Unity Project/MsG Map Editor/Assets/Plugins/System.Data.dll</HintPath>
  </Reference>
  <Reference Include="System.Drawing">
- <HintPath>C:/Users/ivan.cavalheiro/Documents/GitHub/MsG_MapEditor/Unity Project/MsG Map Editor/Assets/Plugins/System.Drawing.dll</HintPath>
+ <HintPath>C:/Users/Ivan/Documents/GitHub/MsG_MapEditor/Unity Project/MsG Map Editor/Assets/Plugins/System.Drawing.dll</HintPath>
  </Reference>
  <Reference Include="System.Windows.Forms">
- <HintPath>C:/Users/ivan.cavalheiro/Documents/GitHub/MsG_MapEditor/Unity Project/MsG Map Editor/Assets/Plugins/System.Windows.Forms.dll</HintPath>
+ <HintPath>C:/Users/Ivan/Documents/GitHub/MsG_MapEditor/Unity Project/MsG Map Editor/Assets/Plugins/System.Windows.Forms.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.iOS.Extensions.Xcode">
  <HintPath>C:/Program Files/Unity/Editor/Data/PlaybackEngines/iossupport/UnityEditor.iOS.Extensions.Xcode.dll</HintPath>
