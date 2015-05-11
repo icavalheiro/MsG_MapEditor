@@ -1,10 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Interface.cs">
     <Files>
-      <File FileName="Assets\Scripts\Interface.cs" Line="133" Column="71" />
+      <File FileName="Assets\Scripts\Interface.cs" Line="187" Column="24" />
       <File FileName="Assets\Scripts\CameraMoviment.cs" Line="23" Column="3" />
-      <File FileName="..\..\..\mirahsguardianmapeditor\Source code\Mirah's Guardian Map Editor\Assets\MapEditor\Scripts\Interface.cs" Line="955" Column="3" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
