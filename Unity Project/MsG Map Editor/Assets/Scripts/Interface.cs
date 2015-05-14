@@ -17,10 +17,19 @@ public class Interface : MonoBehaviour
 		{
 			if(onDelete != null) onDelete();
 		}
+
+		public float Draw(float p_height, float p_tileSize, float p_folderSize, float p_margin)
+		{
+			return 0;
+		}
 	}
 
 	private class LoadedTile
 	{
+		public event Action<LoadedTile> onParentFolderRemoved;
+		public event Action<LoadedTile, TileFolder> onParentFolderSet;
+		public event Action<LoadedTile> onClicked;
+
 		public bool isSelected = false;
 		public Tile tile = null;
 		public TileFolder parentFolder = null;
@@ -34,6 +43,9 @@ public class Interface : MonoBehaviour
 
 			if(parentFolder != null)
 				parentFolder.onDelete += ClearParentFolder;
+
+			if(onParentFolderSet != null)
+				onParentFolderSet(this, p_folder);
 		}
 
 		private void ClearParentFolder()
@@ -42,6 +54,22 @@ public class Interface : MonoBehaviour
 				parentFolder.onDelete -= ClearParentFolder;
 
 			parentFolder = null;
+
+			if(onParentFolderRemoved != null)
+				onParentFolderRemoved(this);
+		}
+
+		public float Draw(float p_height, float p_size)
+		{
+			Rect __rect = new Rect(0, p_height, p_size, p_size);
+
+			if(isSelected)
+				GUI.Box(__rect, tile.texture);
+			else if(GUI.Button(__rect, tile.texture))
+				if(onClicked != null)
+					onClicked(this);
+
+			return __rect.y + p_size;
 		}
 	}
 
@@ -52,6 +80,7 @@ public class Interface : MonoBehaviour
 	public GameObject selectionPrefab;
 	public float tileSelectionBtnSize = 75;
 	public float tileSelectionBtnMargin = 10;
+	public float tileFolderSelectionSize = 36;
 	#endregion
 
 	#region private data
@@ -59,6 +88,9 @@ public class Interface : MonoBehaviour
 	private Transform _selectorTransform;
 	private List<LoadedTile> _loadedTiles = new List<LoadedTile>();
 	private Vector2 _tileSelectorScrollPosition = new Vector2();
+	private List<LoadedTile> _loadedTilesOutOfFolders = new List<LoadedTile>();
+	private List<TileFolder> _folders = new List<TileFolder>();
+	private float _tileSelectionCurrentHeight = 0;
 	#endregion
 
 	void Start()
@@ -99,8 +131,33 @@ public class Interface : MonoBehaviour
 						LoadedTile __loadedTile = new LoadedTile();
 						__loadedTile.tile = __newTile;
 
-						_loadedTiles.Add(__loadedTile);
+						__loadedTile.onParentFolderSet += (p_loadedTile, p_folder) =>
+						{
+							if(p_folder != null)
+								if(_loadedTilesOutOfFolders.Contains(p_loadedTile))
+									_loadedTilesOutOfFolders.Remove(p_loadedTile);
+						};
 
+						__loadedTile.onParentFolderRemoved += (p_loadedTile) =>
+						{
+							if(_loadedTilesOutOfFolders.Contains(p_loadedTile) == false)
+								_loadedTilesOutOfFolders.Add(p_loadedTile);
+						};
+
+						__loadedTile.onClicked += (p_loadedTile) =>
+						{
+							p_loadedTile.isSelected = true;
+
+							if(!(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+								_loadedTiles.ForEach(x => 
+								{
+									if(x != p_loadedTile)
+										x.isSelected = false;
+								});
+						};
+
+						_loadedTilesOutOfFolders.Add(__loadedTile);
+						_loadedTiles.Add(__loadedTile);
 					}
 
 					System.Windows.Forms.MessageBox.Show("Textures loaded.");
@@ -173,16 +230,28 @@ public class Interface : MonoBehaviour
 		{
 			Rect __boxRect = new Rect(0,0, __tileSelectionAreaRect.width, __tileSelectionAreaRect.height);
 			GUI.Box(__boxRect, "", panelsBackgroundStyle);
-			Rect __viewRect = new Rect(0, 0, tileSelectionBtnSize, _loadedTiles.Count * (tileSelectionBtnSize + (tileSelectionBtnMargin)));
+			Rect __viewRect = new Rect(
+				0, 
+				0, 
+				__boxRect.width - 26, 
+				_tileSelectionCurrentHeight);//(_loadedTiles.Count * (tileSelectionBtnSize + (tileSelectionBtnMargin))) + (_folders.Count * (tileFolderSelectionSize + tileSelectionBtnMargin)));
 			_tileSelectorScrollPosition = GUI.BeginScrollView(new Rect(10,0,__boxRect.width-10, __boxRect.height),
 			                                                  _tileSelectorScrollPosition,
 			                                                  __viewRect);
 			{
-				for(int i = 0; i < _loadedTiles.Count; i++)
+				_tileSelectionCurrentHeight = 0;
+				foreach(var folder in _folders)
+					_tileSelectionCurrentHeight = folder.Draw(_tileSelectionCurrentHeight, tileSelectionBtnSize, tileFolderSelectionSize, tileSelectionBtnMargin);
+
+				foreach(var tile in _loadedTilesOutOfFolders)
+					_tileSelectionCurrentHeight = tile.Draw(_tileSelectionCurrentHeight + tileSelectionBtnMargin, tileSelectionBtnSize);
+
+				_tileSelectionCurrentHeight += tileSelectionBtnMargin;
+				/*for(int i = 0; i < _loadedTiles.Count; i++)
 				{
 					Rect __whereToDraw = new Rect(0, i * tileSelectionBtnSize + (i * tileSelectionBtnMargin), tileSelectionBtnSize, tileSelectionBtnSize);
 					GUI.DrawTexture(__whereToDraw, _loadedTiles[i].tile.texture);
-				}
+				}*/
 			}
 			GUI.EndScrollView();
 		}
