@@ -6,6 +6,7 @@ class TileManager : MonoBehaviour
 {
     #region private data
     private static TileManager _instance = null;
+	private static List<TileObject> _tilesInScene = new List<TileObject>();
     #endregion
 
     #region inspector
@@ -37,7 +38,26 @@ class TileManager : MonoBehaviour
         __tileObj.SetPlane(__plane);
         __tileObj.SetPostion(p_where);
 
+		_tilesInScene.Add(__tileObj);
+
         //return the final tile obj
         return __tileObj;
     }
+
+	public static void DeleteTilesInPosition(Vector3 p_where)
+	{
+		List<TileObject> __tilesInGivenPosition = new List<TileObject>();
+		_tilesInScene.ForEach(x => 
+		{
+			if(new Vector2(x.position.x, x.position.z) == new Vector2(p_where.x, p_where.z))
+				__tilesInGivenPosition.Add(x);
+		});
+
+		while(__tilesInGivenPosition.Count > 0)
+		{
+			TileObject __toDelete = __tilesInGivenPosition[0];
+			__tilesInGivenPosition.RemoveAt(0);
+			__toDelete.Destroy();
+		}
+	}
 }

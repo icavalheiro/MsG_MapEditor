@@ -29,10 +29,19 @@ public class Interface : MonoBehaviour
 		public event Action<LoadedTile> onParentFolderRemoved;
 		public event Action<LoadedTile, TileFolder> onParentFolderSet;
 		public event Action<LoadedTile> onClicked;
+		public event Action<LoadedTile, bool> onSelectedChange;
 
 		public bool isSelected = false;
 		public Tile tile = null;
 		public TileFolder parentFolder = null;
+
+		public void SetSelectedState(bool p_isSelected)
+		{
+			isSelected = p_isSelected;
+
+			if(onSelectedChange != null)
+				onSelectedChange(this, p_isSelected);
+		}
 
 		public void SetParentFolder(TileFolder p_folder)
 		{
@@ -91,6 +100,8 @@ public class Interface : MonoBehaviour
 	private List<LoadedTile> _loadedTilesOutOfFolders = new List<LoadedTile>();
 	private List<TileFolder> _folders = new List<TileFolder>();
 	private float _tileSelectionCurrentHeight = 0;
+	private List<Rect> _rectsDrawnedLastFrame = new List<Rect>();
+	private List<LoadedTile> _currentSelectedTiles = new List<LoadedTile>();
 	#endregion
 
 	void Start()
@@ -103,8 +114,11 @@ public class Interface : MonoBehaviour
 		float __iconBtnSize = 30;
 		float __iconBtnMargin = 10;
 
+		_rectsDrawnedLastFrame = new List<Rect>();
+
 		//top left menu
 		Rect __topLeftMenuRect = new Rect(0,0, __iconBtnSize * 3 + __iconBtnMargin * 4, __iconBtnMargin*2 + __iconBtnSize);
+		_rectsDrawnedLastFrame.Add(__topLeftMenuRect);
 		GUI.BeginGroup(__topLeftMenuRect);
 		{
 			GUI.Box(new Rect(0,0, __topLeftMenuRect.width, __topLeftMenuRect.height), "", panelsBackgroundStyle);
@@ -146,14 +160,26 @@ public class Interface : MonoBehaviour
 
 						__loadedTile.onClicked += (p_loadedTile) =>
 						{
-							p_loadedTile.isSelected = true;
+							p_loadedTile.SetSelectedState(true);
 
 							if(!(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
 								_loadedTiles.ForEach(x => 
 								{
 									if(x != p_loadedTile)
-										x.isSelected = false;
+										x.SetSelectedState(false);
 								});
+						};
+
+						__loadedTile.onSelectedChange += (p_loadedTile, p_isSelected) =>
+						{
+							if(p_isSelected)
+							{
+								if(_currentSelectedTiles.Contains(p_loadedTile) == false)
+									_currentSelectedTiles.Add(p_loadedTile);
+							}
+							else
+								_currentSelectedTiles.Remove(p_loadedTile);
+
 						};
 
 						_loadedTilesOutOfFolders.Add(__loadedTile);
@@ -198,6 +224,7 @@ public class Interface : MonoBehaviour
 
 		//camera btns
 		Rect __cameraBtnsRect = new Rect(Screen.width - __iconBtnSize - (__iconBtnMargin*2), 0, __iconBtnSize + (__iconBtnMargin*2), __iconBtnSize*3 + (__iconBtnMargin *4));
+		_rectsDrawnedLastFrame.Add(__cameraBtnsRect);
 		GUI.BeginGroup(__cameraBtnsRect);
 		{
 			GUI.Box(new Rect(0,0, __cameraBtnsRect.width, __cameraBtnsRect.height), "", panelsBackgroundStyle);
@@ -226,6 +253,7 @@ public class Interface : MonoBehaviour
 
 		//tile sliders
 		Rect __tileSelectionAreaRect = new Rect(0, __topLeftMenuRect.y + __topLeftMenuRect.height + 25, 150, Screen.height - (__topLeftMenuRect.y + __topLeftMenuRect.height + 25));
+		_rectsDrawnedLastFrame.Add(__tileSelectionAreaRect);
 		GUI.BeginGroup(__tileSelectionAreaRect);
 		{
 			Rect __boxRect = new Rect(0,0, __tileSelectionAreaRect.width, __tileSelectionAreaRect.height);
@@ -275,10 +303,61 @@ public class Interface : MonoBehaviour
 		if(onUpdate != null)
 			onUpdate();
 
+		if(Input.GetKeyDown(KeyCode.Escape))
+			_loadedTiles.ForEach(x => x.SetSelectedState(false));
+
 		Ray __ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
 		Vector3 __updatedPosition = __ray.origin + (((-__ray.origin.y)/__ray.direction.y) * __ray.direction);
 		__updatedPosition = new Vector3(Mathf.Round(__updatedPosition.x), 0.001f, Mathf.Round(__updatedPosition.z));
 		_selectorTransform.position = __updatedPosition + (Vector3.down * 0.1f);
+
+		ManageMouseButton();
+	}
+
+	private List<TileObject> _tilesCreatedInCurrentPaint = new List<TileObject>();
+	private void ManageMouseButton()
+	{
+		if(Input.GetMouseButton(0) == false)
+		{
+			if(_tilesCreatedInCurrentPaint.Count > 0)
+				_tilesCreatedInCurrentPaint = new List<TileObject>();
+		}
+		else
+		{
+			bool __mouseOverAMenu = false;
+			_rectsDrawnedLastFrame.ForEach(x =>
+			{
+				if(x.Contains(new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y)))
+					__mouseOverAMenu = true;
+			});
+
+			if(__mouseOverAMenu)
+				return;
+
+			if(_currentSelectedTiles.Count == 0)
+			{//DELETE
+				TileManager.DeleteTilesInPosition(_selectorTransform.position);
+			}
+			else
+			{
+				bool __tileAlreadyPainted = false;
+				_tilesCreatedInCurrentPaint.ForEach(x =>
+				{
+					if(x.position == _selectorTransform.position)
+						__tileAlreadyPainted = true;
+				});
+
+				if(__tileAlreadyPainted)
+					return;
+
+				//CREATE A TILE IN THE POSITION
+				Tile __tileToSpawn = _currentSelectedTiles[UnityEngine.Random.Range(0, _currentSelectedTiles.Count)].tile;
+
+				TileObject __createdTile = TileManager.CreateTile(_selectorTransform.position, __tileToSpawn);
+				_tilesCreatedInCurrentPaint.Add(__createdTile);
+			}
+
+		}
 	}
 }

@@ -63,6 +63,12 @@ class TileObject : MonoBehaviour
     {
         if (onDeleted != null) onDeleted();
 
-        GameObject.DestroyObject(this.gameObject);
+		if(this != null && this.gameObject != null)
+        	GameObject.DestroyObject(this.gameObject);
     }
+
+	public void Destroy()
+	{
+		OnTileDeleted();
+	}
 }
